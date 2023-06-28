@@ -1,8 +1,14 @@
 #include <windows.h>
 #include <GL/glut.h>
+#include <cmath>
+#include <ctime>
 
-int winW = 1000;
-int winH = 1000;
+int winW = 400;
+int winH = 400;
+
+struct point {
+	float x ,y;
+};
 
 void line(float x0, float y0, float x1, float y1) {
 	glBegin(GL_LINES);
@@ -21,23 +27,56 @@ void rect(
 	line(x3, y3, x0, y0);
 }
 
-void square(float x, float y, float w) {
-	line(x,y, x+w,y);
-	line(x+w,y, x+w,y+w);
-	line(x+w,y+w, x,y+w);
-	line(x,y+w, x,y);
+
+point rotatePoint(float x, float y, float angle) {
+	point s;
+	s.x = x*cos(angle) - y*sin(angle);
+	s.y = y*cos(angle) + x*sin(angle);
+	return s;
+}
+
+void square(float x, float y, float w, float angle = 0) {
+	point p1 = rotatePoint(x,y,angle);
+	point p2 = rotatePoint(x+w,y,angle);
+	line(p1.x,p1.y, p2.x,p2.y);
+
+	p1 = rotatePoint(x+w,y+w,angle);
+	line(p2.x,p2.y, p1.x,p1.y);
+
+	p2 = rotatePoint(x,y+w,angle);
+	line(p1.x,p1.y, p2.x,p2.y);
+
+	p1 = rotatePoint(x,y,angle);
+	line(p2.x,p2.y, p1.x,p1.y);
 }
 
 void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	//line(0, 0, 1.0f, 1.0f);
-	//line(0.5, 0.5, 0.5, 1.0);
+	glBegin(GL_POINTS);
+		glVertex2f(0,0);
+	glEnd();
 
-	square(0,0, 0.5f);
+	float w = 0.1f;
+	float r = M_PI;
 
-	glutSwapBuffers();
+	float wd = 0.0f;
+	float ad = 0.0f;
+
+	for (int i=0; i < 400; i++) {
+		square(-w/2,-w/2, w, r);
+
+		w =+ wd;
+		r += M_PI/30 - ad;
+
+		if (ad < M_PI/40) ad += 0.0005f;
+		wd += 0.01f;
+
+		Sleep(50);
+		glutSwapBuffers();
+	}
+
 
 }
 int main(int argc, char** argv)
